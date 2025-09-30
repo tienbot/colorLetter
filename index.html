@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Стираемая буква JS</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      margin: 0 auto;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 400px;
+      height: 400px;
+      cursor: crosshair;
+    }
+
+    #bgCanvas { z-index: 1; }
+    #fgCanvas { z-index: 2; }
+
+    .instructions {
+      margin-top: 16px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Стираемая надпись JS</h1>
+    <div class="canvas-container">
+      <canvas id="bgCanvas" width="400" height="400"></canvas>
+      <canvas id="fgCanvas" width="400" height="400"></canvas>
+    </div>
+    <p class="instructions">Проведите мышкой/пальцем по надписи JS, чтобы стереть чёрный слой</p>
+  </div>
+
+  <script>
+    const WIDTH = 400;
+    const HEIGHT = 400;
+    const TEXT = "JS";
+    const FONT = "bold 300px Arial, sans-serif";
+
+    const bgCanvas = document.getElementById("bgCanvas");
+    const fgCanvas = document.getElementById("fgCanvas");
+    const bgCtx = bgCanvas.getContext("2d");
+    const fgCtx = fgCanvas.getContext("2d");
+
+    // универсальная функция для отрисовки текста
+    function drawText(ctx, fillStyle) {
+      ctx.clearRect(0, 0, WIDTH, HEIGHT);
+      ctx.fillStyle = fillStyle;
+      ctx.font = FONT;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(TEXT, WIDTH / 2, HEIGHT / 2);
+    }
+
+    // создаём градиент для заднего слоя
+    function createGradient(ctx) {
+      const gradient = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+      gradient.addColorStop(0, "#ff0000");
+      gradient.addColorStop(0.25, "#ffff00");
+      gradient.addColorStop(0.5, "#00ff00");
+      gradient.addColorStop(0.75, "#0000ff");
+      gradient.addColorStop(1, "#ff00ff");
+      return gradient;
+    }
+
+    // стираем часть чёрной надписи
+    function erase(x, y) {
+      fgCtx.globalCompositeOperation = "destination-out";
+      fgCtx.beginPath();
+      fgCtx.arc(x, y, 20, 0, Math.PI * 2);
+      fgCtx.fill();
+      fgCtx.globalCompositeOperation = "source-over";
+    }
+
+    // события мыши и касаний
+    let isDrawing = false;
+
+    fgCanvas.addEventListener("mousedown", e => {
+      isDrawing = true;
+      erase(e.offsetX, e.offsetY);
+    });
+
+    fgCanvas.addEventListener("mousemove", e => {
+      if (isDrawing) erase(e.offsetX, e.offsetY);
+    });
+
+    fgCanvas.addEventListener("mouseup", () => isDrawing = false);
+    fgCanvas.addEventListener("mouseleave", () => isDrawing = false);
+
+    fgCanvas.addEventListener("touchstart", e => {
+      e.preventDefault();
+      isDrawing = true;
+      const rect = fgCanvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      erase(touch.clientX - rect.left, touch.clientY - rect.top);
+    });
+
+    fgCanvas.addEventListener("touchmove", e => {
+      e.preventDefault();
+      if (isDrawing) {
+        const rect = fgCanvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        erase(touch.clientX - rect.left, touch.clientY - rect.top);
+      }
+    });
+
+    fgCanvas.addEventListener("touchend", () => isDrawing = false);
+
+    // запуск
+    drawText(bgCtx, createGradient(bgCtx)); // градиентная надпись
+    drawText(fgCtx, "#000");                // чёрная надпись поверх
+  </script>
+</body>
+</html>
