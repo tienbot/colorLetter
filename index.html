@@ -83,8 +83,11 @@
   <script>
     const WIDTH = 700;
     const HEIGHT = 700;
-    const TEXT = "JS";
-    const FONT = "bold 530px Arturito, sans-serif"; // Исправлено: san-serif → sans-serif
+    const TEXT_J = "J";
+    const TEXT_S = "S";
+    const FONT = "bold 530px Arturito, sans-serif";
+    const VERTICAL_SPACING = 160; // Расстояние между буквами по вертикали
+    const HORIZONTAL_SPACING = -20; // Расстояние между буквами по горизонтали
 
     const bgCanvas = document.getElementById("bgCanvas");
     const fgCanvas = document.getElementById("fgCanvas");
@@ -113,6 +116,12 @@
       // Маска для определения точной области текста
       let textMask = null;
 
+      // Функция для измерения ширины текста
+      function getTextWidth(text, ctx) {
+        ctx.font = FONT;
+        return ctx.measureText(text).width;
+      }
+
       // универсальная функция для отрисовки текста
       function drawText(ctx, fillStyle) {
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
@@ -120,7 +129,24 @@
         ctx.font = FONT;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(TEXT, WIDTH / 2, HEIGHT / 2);
+        
+        // Измеряем ширину букв
+        const jWidth = getTextWidth(TEXT_J, ctx);
+        const sWidth = getTextWidth(TEXT_S, ctx);
+        
+        // Вычисляем позиции для центрирования
+        const totalWidth = jWidth + sWidth + HORIZONTAL_SPACING;
+        const startX = (WIDTH - totalWidth) / 2;
+        
+        // Рисуем букву J
+        const jX = startX + jWidth / 2;
+        const jY = HEIGHT / 2 - VERTICAL_SPACING / 2;
+        ctx.fillText(TEXT_J, jX, jY);
+        
+        // Рисуем букву S
+        const sX = startX + jWidth + HORIZONTAL_SPACING + sWidth / 2;
+        const sY = HEIGHT / 2 + VERTICAL_SPACING / 2;
+        ctx.fillText(TEXT_S, sX, sY);
       }
 
       // Создаем маску текста для точной проверки
@@ -130,7 +156,24 @@
         tempCtx.font = FONT;
         tempCtx.textAlign = "center";
         tempCtx.textBaseline = "middle";
-        tempCtx.fillText(TEXT, WIDTH / 2, HEIGHT / 2);
+        
+        // Измеряем ширину букв
+        const jWidth = getTextWidth(TEXT_J, tempCtx);
+        const sWidth = getTextWidth(TEXT_S, tempCtx);
+        
+        // Вычисляем позиции для центрирования
+        const totalWidth = jWidth + sWidth + HORIZONTAL_SPACING;
+        const startX = (WIDTH - totalWidth) / 2;
+        
+        // Рисуем букву J
+        const jX = startX + jWidth / 2;
+        const jY = HEIGHT / 2 - VERTICAL_SPACING / 2;
+        tempCtx.fillText(TEXT_J, jX, jY);
+        
+        // Рисуем букву S
+        const sX = startX + jWidth + HORIZONTAL_SPACING + sWidth / 2;
+        const sY = HEIGHT / 2 + VERTICAL_SPACING / 2;
+        tempCtx.fillText(TEXT_S, sX, sY);
         
         const imageData = tempCtx.getImageData(0, 0, WIDTH, HEIGHT);
         textMask = imageData.data;
